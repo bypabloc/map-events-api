@@ -2,9 +2,12 @@ const express = require('express')
 const bodyParser= require('body-parser')
 const app = express()
 const dotenv = require('dotenv');
+const cors = require('cors');
 dotenv.config();
 const MongoClient = require('mongodb').MongoClient
 const connectionString = process.env.NODE_DB;
+
+app.use(cors());
 
 // Make sure you place body-parser before your CRUD handlers!
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -18,7 +21,7 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html')
 })
 
-app.get('/map-events', async (req, res) => {
+app.get('/events', async (req, res) => {
     console.log('req',req)
 
     try {
@@ -39,11 +42,11 @@ app.get('/map-events', async (req, res) => {
 
     } catch (err) {
         console.log('err',err)
-        res.send({ errors: [''] })
+        res.send({ errors: ['error no controlado'] })
     }
-
 })
-app.post('/map-events', async (req, res) => {
+
+app.post('/events', async (req, res) => {
     console.log('req',req)
 
     const { body } = req
@@ -72,7 +75,7 @@ app.post('/map-events', async (req, res) => {
 
     } catch (err) {
         console.log('err',err)
-        res.send({ errors: [''] })
+        res.send({ errors: ['error no controlado'] })
     }
 
 })
