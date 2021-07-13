@@ -50,31 +50,24 @@ app.get('/events', async (req, res) => {
     }
 })
 app.post('/events', async (req, res) => {
-    console.log('req',req)
 
-    const { body } = req
+    const { description, keywords, coordenadas } = req.body
 
     try {
         
         const client = await MongoClient.connect(connectionString);
-        // const MyCollection = db.collection('MyCollection');
-        // const result = await MyCollection.find().toArray();
-
-        console.log('client',client)
-
         const db = client.db('map-events')
-        console.log('db',db)
-        // console.log('result',result)
 
         const eventsCollection = db.collection('events')
 
-        eventsCollection.insertOne(body)
-            .then(result => {
-                console.log(result)
-            })
-            .catch(error => console.error(error))
+        const event = await eventsCollection.insertOne({ description, keywords, coordenadas })
 
-        res.send({ body })
+        res.send({
+            id: event.insertedId,
+            description,
+            keywords,
+            coordenadas,
+        })
 
     } catch (err) {
         console.log('err',err)
@@ -110,7 +103,7 @@ app.get('/keywords', async (req, res) => {
 })
 app.post('/keywords', async (req, res) => {
 
-    const { name } = req.body
+    const { text } = req.body
 
     try {
         
@@ -123,11 +116,11 @@ app.post('/keywords', async (req, res) => {
 
         const keywordsCollection = db.collection('keywords')
 
-        const keyword = await keywordsCollection.insertOne({ name })
+        const keyword = await keywordsCollection.insertOne({ text })
 
         res.send({ 
             id: keyword.insertedId,
-            name,
+            text,
          })
 
     } catch (err) {
