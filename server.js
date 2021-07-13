@@ -1,5 +1,4 @@
 const express = require('express')
-const bodyParser= require('body-parser')
 const app = express()
 const dotenv = require('dotenv');
 const cors = require('cors');
@@ -9,16 +8,21 @@ const connectionString = process.env.NODE_DB;
 
 app.use(cors());
 
-// Make sure you place body-parser before your CRUD handlers!
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(express.json())
 
 app.listen(3000, function() {
     console.log('listening on 3000')
 })
 
-// All your handlers here...
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html')
+})
+
+app.get('/new_event', (req, res) => {
+    res.sendFile(__dirname + '/events.html')
+})
+app.get('/new_keyword', (req, res) => {
+    res.sendFile(__dirname + '/keywords.html')
 })
 
 app.get('/events', async (req, res) => {
@@ -45,7 +49,6 @@ app.get('/events', async (req, res) => {
         res.send({ errors: ['error no controlado'] })
     }
 })
-
 app.post('/events', async (req, res) => {
     console.log('req',req)
 
@@ -80,9 +83,56 @@ app.post('/events', async (req, res) => {
 
 })
 
-// MongoClient.connect(connectionString, {
-//     useUnifiedTopology: true
-// }, (err, client) => {
-//     if (err) return console.error(err)
-//     console.log('Connected to Database')
-// })
+
+app.get('/keywords', async (req, res) => {
+    console.log('req',req)
+
+    try {
+        
+        const client = await MongoClient.connect(connectionString);
+        // const MyCollection = db.collection('MyCollection');
+        // const result = await MyCollection.find().toArray();
+
+        console.log('client',client)
+
+        const db = client.db('map-events')
+        console.log('db',db)
+
+        const keywords = await db.collection('keywords').find().toArray()
+        console.log('keywords',keywords)
+        
+        res.send({ list: keywords })
+
+    } catch (err) {
+        console.log('err',err)
+        res.send({ errors: ['error no controlado'] })
+    }
+})
+app.post('/keywords', async (req, res) => {
+
+    const { name } = req.body
+
+    try {
+        
+        const client = await MongoClient.connect(connectionString);
+        // const MyCollection = db.collection('MyCollection');
+        // const result = await MyCollection.find().toArray();
+
+        const db = client.db('map-events')
+        // console.log('result',result)
+
+        const keywordsCollection = db.collection('keywords')
+
+        keywordsCollection.insertOne({ name })
+            .then(result => {
+            })
+            .catch(error => console.error(error))
+
+        res.send({ name })
+
+    } catch (err) {
+        console.log('err',err)
+        res.send({ errors: ['error no controlado'] })
+    }
+
+})
