@@ -26,14 +26,27 @@ app.get('/new_keyword', (req, res) => {
 })
 
 app.post('/events-list', async (req, res) => {
+
+    const { keywords } = req.body
+
     try {
         const client = await MongoClient.connect(connectionString);
         const db = client.db('map-events')
 
-        const events = await db.collection('events').find().toArray()
+        const filter = (keywords?.length>0) ? {
+            keywords: {
+                "$not": {
+                    "$elemMatch": {
+                        "$nin": keywords
+                    }
+                }
+            }
+        } : {}
+
+        const events = await db.collection('events').find(filter).toArray()
         console.log('events',events)
         
-        res.send({ list: events })
+        res.send({ list: events, keywords })
 
     } catch (err) {
         console.log('err',err)
