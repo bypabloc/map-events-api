@@ -25,19 +25,10 @@ app.get('/new_keyword', (req, res) => {
     res.sendFile(__dirname + '/keywords.html')
 })
 
-app.get('/events', async (req, res) => {
-    console.log('req',req)
-
+app.post('/events-list', async (req, res) => {
     try {
-        
         const client = await MongoClient.connect(connectionString);
-        // const MyCollection = db.collection('MyCollection');
-        // const result = await MyCollection.find().toArray();
-
-        console.log('client',client)
-
         const db = client.db('map-events')
-        console.log('db',db)
 
         const events = await db.collection('events').find().toArray()
         console.log('events',events)
@@ -78,21 +69,12 @@ app.post('/events', async (req, res) => {
 
 
 app.get('/keywords', async (req, res) => {
-    console.log('req',req)
-
     try {
         
         const client = await MongoClient.connect(connectionString);
-        // const MyCollection = db.collection('MyCollection');
-        // const result = await MyCollection.find().toArray();
-
-        console.log('client',client)
-
         const db = client.db('map-events')
-        console.log('db',db)
 
         const keywords = await db.collection('keywords').find().toArray()
-        console.log('keywords',keywords)
         
         res.send({ list: keywords })
 
@@ -102,17 +84,12 @@ app.get('/keywords', async (req, res) => {
     }
 })
 app.post('/keywords', async (req, res) => {
-
     const { text } = req.body
 
     try {
         
         const client = await MongoClient.connect(connectionString);
-        // const MyCollection = db.collection('MyCollection');
-        // const result = await MyCollection.find().toArray();
-
         const db = client.db('map-events')
-        // console.log('result',result)
 
         const keywordsCollection = db.collection('keywords')
 
@@ -122,7 +99,6 @@ app.post('/keywords', async (req, res) => {
             id: keyword.insertedId,
             text,
          })
-
     } catch (err) {
         console.log('err',err)
         res.send({ errors: ['error no controlado'] })
