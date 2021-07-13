@@ -123,12 +123,12 @@ app.post('/keywords', async (req, res) => {
 
         const keywordsCollection = db.collection('keywords')
 
-        keywordsCollection.insertOne({ name })
-            .then(result => {
-            })
-            .catch(error => console.error(error))
+        const keyword = await keywordsCollection.insertOne({ name })
 
-        res.send({ name })
+        res.send({ 
+            id: keyword.insertedId,
+            name,
+         })
 
     } catch (err) {
         console.log('err',err)
