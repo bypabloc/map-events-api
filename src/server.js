@@ -25,20 +25,13 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
 })
 
-app.get('/new_event', (req, res) => {
-    res.sendFile(__dirname + '/views/events.html')
-})
-app.get('/new_keyword', (req, res) => {
-    res.sendFile(__dirname + '/views/keywords.html')
-})
-
 app.post('/events-list', async (req, res) => {
 
     const { keywords } = req.body
 
     try {
         const client = await MongoClient.connect(connectionString);
-        const db = client.db('map-events')
+        const table = client.db('map-events')
 
         const filter = (keywords?.length>0) ? {
             keywords: {
@@ -50,7 +43,7 @@ app.post('/events-list', async (req, res) => {
             }
         } : {}
 
-        const events = await db.collection('events').find(filter).toArray()
+        const events = await table.collection('events').find(filter).toArray()
 
         io.emit('keywords', { keywords });
         io.emit('LIST',{ list: events, keywords });
@@ -69,9 +62,9 @@ app.post('/events', async (req, res) => {
     try {
         
         const client = await MongoClient.connect(connectionString);
-        const db = client.db('map-events')
+        const table = client.db('map-events')
 
-        const eventsCollection = db.collection('events')
+        const eventsCollection = table.collection('events')
 
         const event = await eventsCollection.insertOne({ description, keywords, coordenadas })
 
@@ -101,9 +94,9 @@ app.get('/keywords', async (req, res) => {
     try {
         
         const client = await MongoClient.connect(connectionString);
-        const db = client.db('map-events')
+        const table = client.db('map-events')
 
-        const keywords = await db.collection('keywords').find().toArray()
+        const keywords = await table.collection('keywords').find().toArray()
         
         res.send({ list: keywords })
 
@@ -118,9 +111,9 @@ app.post('/keywords', async (req, res) => {
     try {
         
         const client = await MongoClient.connect(connectionString);
-        const db = client.db('map-events')
+        const table = client.db('map-events')
 
-        const keywordsCollection = db.collection('keywords')
+        const keywordsCollection = table.collection('keywords')
 
         const keyword = await keywordsCollection.insertOne({ text })
 
