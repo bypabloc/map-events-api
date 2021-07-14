@@ -77,7 +77,7 @@ app.post('/events-list', async (req, res) => {
 
     } catch (err) {
         console.log('err',err)
-        res.send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: ['error no controlado'] })
     }
 })
 app.post('/events', async (req, res) => {
@@ -109,7 +109,7 @@ app.post('/events', async (req, res) => {
 
     } catch (err) {
         console.log('err',err)
-        res.send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: ['error no controlado'] })
     }
 
 })
@@ -127,7 +127,7 @@ app.get('/keywords', async (req, res) => {
 
     } catch (err) {
         console.log('err',err)
-        res.send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: ['error no controlado'] })
     }
 })
 app.post('/keywords', async (req, res) => {
@@ -153,7 +153,7 @@ app.post('/keywords', async (req, res) => {
          })
     } catch (err) {
         console.log('err',err)
-        res.send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: ['error no controlado'] })
     }
 
 })
