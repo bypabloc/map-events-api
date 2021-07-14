@@ -5,13 +5,14 @@ const cors = require('cors');
 dotenv.config();
 const MongoClient = require('mongodb').MongoClient
 const connectionString = process.env.NODE_DB;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
 app.use(express.json())
 
-const server = app.listen(3000, function() {
-    console.log('listening on 3000')
+const server = app.listen(PORT, function() {
+    console.log('listening on ',PORT)
 })
 
 // const socket = require('./socket')
