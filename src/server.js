@@ -35,7 +35,7 @@ io.on('connection', (socket) => {
     socket.on('pingServer', (msg) => {
         console.log('pingServer')
         console.log('mensaje',msg)
-        io.emit('customEmit', 'prueba');
+        io.emit('tweet', 'prueba');
     });
 })
 
@@ -69,6 +69,10 @@ app.post('/events-list', async (req, res) => {
         } : {}
 
         const events = await db.collection('events').find(filter).toArray()
+
+        io.emit('keywords', { keywords });
+        io.emit('LIST',{ list: events, keywords });
+
         res.send({ list: events, keywords })
 
     } catch (err) {
