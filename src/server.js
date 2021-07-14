@@ -30,7 +30,6 @@ io.on('connection', (socket) => {
         console.log('addKeyword',data)
         io.emit('CHAT_MESSAGE', data);
     });
-    
 
     socket.on('pingServer', (msg) => {
         console.log('pingServer')
