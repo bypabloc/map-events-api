@@ -1,8 +1,11 @@
 const express = require('express')
 const app = express()
+
 const dotenv = require('dotenv');
-const cors = require('cors');
 dotenv.config();
+
+const cors = require('cors');
+
 const MongoClient = require('mongodb').MongoClient
 const connectionString = process.env.NODE_DB;
 const PORT = process.env.PORT || 3000;
@@ -15,29 +18,8 @@ const server = app.listen(PORT, function() {
     console.log('listening on ',PORT)
 })
 
-// const socket = require('./socket')
-// socket(server);
-
-const io = require('socket.io')(server, { cors: { origin: '*', } });
-
-io.on('connection', (socket) => {
-    console.log('conectado a socket')
-
-    socket.on('chat-message', (msg) => {
-        io.emit('chat-message', msg);
-    });
-
-    socket.on('addKeyword', (data) => {
-        console.log('addKeyword',data)
-        io.emit('CHAT_MESSAGE', data);
-    });
-
-    socket.on('pingServer', (msg) => {
-        console.log('pingServer')
-        console.log('mensaje',msg)
-        io.emit('tweet', 'prueba');
-    });
-})
+const socket = require('./socket')
+const io = socket(server);
 
 app.get('/', (req, res) => {
     res.sendFile(__dirname + '/views/index.html')
