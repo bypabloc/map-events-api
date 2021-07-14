@@ -10,19 +10,44 @@ app.use(cors());
 
 app.use(express.json())
 
-app.listen(3000, function() {
+const server = app.listen(3000, function() {
     console.log('listening on 3000')
 })
 
+// const socket = require('./socket')
+// socket(server);
+
+const io = require('socket.io')(server, { cors: { origin: '*', } });
+
+io.on('connection', (socket) => {
+    console.log('conectado a socket')
+
+    socket.on('chat-message', (msg) => {
+        io.emit('chat-message', msg);
+    });
+
+    socket.on('addKeyword', (data) => {
+        console.log('addKeyword',data)
+        io.emit('CHAT_MESSAGE', data);
+    });
+    
+
+    socket.on('pingServer', (msg) => {
+        console.log('pingServer')
+        console.log('mensaje',msg)
+        io.emit('customEmit', 'prueba');
+    });
+})
+
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html')
+    res.sendFile(__dirname + '/views/index.html')
 })
 
 app.get('/new_event', (req, res) => {
-    res.sendFile(__dirname + '/events.html')
+    res.sendFile(__dirname + '/views/events.html')
 })
 app.get('/new_keyword', (req, res) => {
-    res.sendFile(__dirname + '/keywords.html')
+    res.sendFile(__dirname + '/views/keywords.html')
 })
 
 app.post('/events-list', async (req, res) => {
@@ -44,8 +69,6 @@ app.post('/events-list', async (req, res) => {
         } : {}
 
         const events = await db.collection('events').find(filter).toArray()
-        console.log('events',events)
-        
         res.send({ list: events, keywords })
 
     } catch (err) {
@@ -65,6 +88,13 @@ app.post('/events', async (req, res) => {
         const eventsCollection = db.collection('events')
 
         const event = await eventsCollection.insertOne({ description, keywords, coordenadas })
+
+        io.emit('EVENT_ADD',{ 
+            id: event.insertedId,
+            description,
+            keywords,
+            coordenadas,
+        });
 
         res.send({
             id: event.insertedId,
@@ -107,6 +137,11 @@ app.post('/keywords', async (req, res) => {
         const keywordsCollection = db.collection('keywords')
 
         const keyword = await keywordsCollection.insertOne({ text })
+
+        io.emit('KEYWORD_ADD',{ 
+            id: keyword.insertedId,
+            text,
+        });
 
         res.send({ 
             id: keyword.insertedId,
