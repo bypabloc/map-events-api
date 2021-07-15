@@ -6,8 +6,8 @@ dotenv.config();
 
 const cors = require('cors');
 
-const MongoClient = require('mongodb').MongoClient
-const connectionString = process.env.NODE_DB;
+const db = require('./db-connection')
+
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -36,8 +36,7 @@ app.post('/events-list', async (req, res) => {
             }
         }
 
-        const client = await MongoClient.connect(connectionString);
-        const table = client.db('map-events')
+        const table = await db('events')
 
         const filter = {
             keywords: {
@@ -49,7 +48,7 @@ app.post('/events-list', async (req, res) => {
             }
         }
 
-        const events = await table.collection('events').find(filter).toArray()
+        const events = await table.find(filter).toArray()
 
         // io.emit('LIST',{ list: events, keywords });
 
@@ -65,25 +64,19 @@ app.post('/events', async (req, res) => {
     const { description, keywords, coordenadas } = req.body
 
     try {
-        
-        const client = await MongoClient.connect(connectionString);
-        const table = client.db('map-events')
+        const table = await db('events')
 
-        const eventsCollection = table.collection('events')
-
-        const event = await eventsCollection.insertOne({ description, keywords, coordenadas })
+        const event = await table.insertOne({ description, keywords, coordenadas })
         
         if(keywords?.length>0){
-            for (const e of keywords) {
-                io.to(e).emit('EVENT_ADD',{ 
-                    id: event.insertedId,
-                    description,
-                    keywords,
-                    coordenadas,
-                })
-            }
+            io.to(keywords).emit('EVENT_ADD',{ 
+                id: event.insertedId,
+                description,
+                keywords,
+                coordenadas,
+            })
         }
-
+        
         res.send({
             id: event.insertedId,
             description,
@@ -93,7 +86,7 @@ app.post('/events', async (req, res) => {
 
     } catch (err) {
         console.log('err',err)
-        res.status(429).send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: [err.message] })
     }
 
 })
@@ -101,30 +94,23 @@ app.post('/events', async (req, res) => {
 
 app.get('/keywords', async (req, res) => {
     try {
-        
-        const client = await MongoClient.connect(connectionString);
-        const table = client.db('map-events')
+        const table = await db('keywords')
 
-        const keywords = await table.collection('keywords').find().toArray()
+        const keywords = await table.find().toArray()
         
         res.send({ list: keywords })
-
     } catch (err) {
         console.log('err',err)
-        res.status(429).send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: [err.message] })
     }
 })
 app.post('/keywords', async (req, res) => {
     const { text } = req.body
 
     try {
+        const table = await db('keywords')
         
-        const client = await MongoClient.connect(connectionString);
-        const table = client.db('map-events')
-
-        const keywordsCollection = table.collection('keywords')
-
-        const keyword = await keywordsCollection.insertOne({ text })
+        const keyword = table.insertOne({ text })
 
         io.emit('KEYWORD_ADD',{ 
             id: keyword.insertedId,
@@ -137,7 +123,7 @@ app.post('/keywords', async (req, res) => {
         })
     } catch (err) {
         console.log('err',err)
-        res.status(429).send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: [err.message] })
     }
 
 })
