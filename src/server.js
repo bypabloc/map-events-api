@@ -30,10 +30,16 @@ app.post('/events-list', async (req, res) => {
     const { keywords } = req.body
 
     try {
+        if(keywords?.length>0){
+            for (const e of keywords) {
+                io.to(e).emit('keywords', { keywords });
+            }
+        }
+
         const client = await MongoClient.connect(connectionString);
         const table = client.db('map-events')
 
-        const filter = (keywords?.length>0) ? {
+        const filter = {
             keywords: {
                 "$not": {
                     "$elemMatch": {
@@ -41,18 +47,17 @@ app.post('/events-list', async (req, res) => {
                     }
                 }
             }
-        } : {}
+        }
 
         const events = await table.collection('events').find(filter).toArray()
 
-        io.emit('keywords', { keywords });
-        io.emit('LIST',{ list: events, keywords });
+        // io.emit('LIST',{ list: events, keywords });
 
         res.send({ list: events, keywords })
 
     } catch (err) {
         console.log('err',err)
-        res.status(429).send({ errors: ['error no controlado'] })
+        res.status(429).send({ errors: [err.message] })
     }
 })
 app.post('/events', async (req, res) => {
@@ -67,13 +72,17 @@ app.post('/events', async (req, res) => {
         const eventsCollection = table.collection('events')
 
         const event = await eventsCollection.insertOne({ description, keywords, coordenadas })
-
-        io.emit('EVENT_ADD',{ 
-            id: event.insertedId,
-            description,
-            keywords,
-            coordenadas,
-        });
+        
+        if(keywords?.length>0){
+            for (const e of keywords) {
+                io.to(e).emit('EVENT_ADD',{ 
+                    id: event.insertedId,
+                    description,
+                    keywords,
+                    coordenadas,
+                })
+            }
+        }
 
         res.send({
             id: event.insertedId,
@@ -125,7 +134,7 @@ app.post('/keywords', async (req, res) => {
         res.send({ 
             id: keyword.insertedId,
             text,
-         })
+        })
     } catch (err) {
         console.log('err',err)
         res.status(429).send({ errors: ['error no controlado'] })
